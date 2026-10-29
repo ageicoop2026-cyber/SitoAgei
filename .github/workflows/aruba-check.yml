@@ -34,6 +34,9 @@ jobs:
                   ftp.nlst()
                   ftp.quit()
               print("Connessione FTPS e lettura della cartella / riuscite. Nessun file modificato.")
+          except ssl.SSLCertVerificationError as error:
+              print("Certificato TLS non valido: " + error.verify_message)
+              sys.exit(1)
           except Exception as error:
               print("Verifica non riuscita (" + type(error).__name__ + "). Controllare credenziali, certificato e filtro FTP Aruba.")
               sys.exit(1)
