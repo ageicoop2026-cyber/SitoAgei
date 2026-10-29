@@ -16,31 +16,15 @@ jobs:
           import ftplib
           import os
           import ssl
-          import socket
           import sys
-
-          class ImplicitFTP_TLS(ftplib.FTP_TLS):
-              def connect(self, host, port=990):
-                  self.host = host
-                  self.port = port
-                  raw_socket = socket.create_connection((host, port), self.timeout)
-                  self.af = raw_socket.family
-                  try:
-                      self.sock = self.context.wrap_socket(raw_socket, server_hostname=host)
-                  except Exception:
-                      raw_socket.close()
-                      raise
-                  self.file = self.sock.makefile("r", encoding=self.encoding)
-                  self.welcome = self.getresp()
-                  return self.welcome
 
           username = os.environ.get("ARUBA_FTP_USERNAME", "")
           password = os.environ.get("ARUBA_FTP_PASSWORD", "")
           if not username or not password:
               sys.exit("Aggiungere i secrets ARUBA_FTP_USERNAME e ARUBA_FTP_PASSWORD.")
           try:
-              with ImplicitFTP_TLS(context=ssl.create_default_context(), timeout=30) as ftp:
-                  ftp.connect("ftp.agei.it", 990)
+              with ftplib.FTP_TLS(context=ssl.create_default_context(), timeout=30) as ftp:
+                  ftp.connect("ftp.agei.it", 21)
                   ftp.login(username, password)
                   ftp.prot_p()
                   ftp.set_pasv(True)
