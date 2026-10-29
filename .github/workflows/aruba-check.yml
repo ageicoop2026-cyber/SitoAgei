@@ -40,7 +40,7 @@ jobs:
               sys.exit("Aggiungere i secrets ARUBA_FTP_USERNAME e ARUBA_FTP_PASSWORD.")
           try:
               with ImplicitFTP_TLS(context=ssl.create_default_context(), timeout=30) as ftp:
-                  ftp.connect("ftplnx.agei.it", 990)
+                  ftp.connect("ftp.agei.it", 990)
                   ftp.login(username, password)
                   ftp.prot_p()
                   ftp.set_pasv(True)
