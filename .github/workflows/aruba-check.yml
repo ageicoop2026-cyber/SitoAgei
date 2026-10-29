@@ -1,0 +1,40 @@
+name: Verifica connessione Aruba
+on:
+  workflow_dispatch:
+permissions: {}
+jobs:
+  verifica-ftps:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Verifica accesso FTPS senza modificare file
+        env:
+          ARUBA_FTP_USERNAME: ${{ secrets.ARUBA_FTP_USERNAME }}
+          ARUBA_FTP_PASSWORD: ${{ secrets.ARUBA_FTP_PASSWORD }}
+        run: |
+          python3 - <<'PY'
+          import ftplib
+          import os
+          import ssl
+          import sys
+
+          username = os.environ.get("ARUBA_FTP_USERNAME", "")
+          password = os.environ.get("ARUBA_FTP_PASSWORD", "")
+          if not username or not password:
+              sys.exit("Aggiungere i secrets ARUBA_FTP_USERNAME e ARUBA_FTP_PASSWORD.")
+          try:
+              with ftplib.FTP_TLS(context=ssl.create_default_context(), timeout=30) as ftp:
+                  ftp.connect("ftp.agei.it", 21)
+                  ftp.login(username, password)
+                  ftp.prot_p()
+                  ftp.set_pasv(True)
+                  ftp.cwd("/")
+                  # Read the listing to verify the protected data connection.
+                  # Do not print names or contents of remote files.
+                  ftp.nlst()
+                  ftp.quit()
+              print("Connessione FTPS e lettura della cartella / riuscite. Nessun file modificato.")
+          except Exception as error:
+              print("Verifica non riuscita (" + type(error).__name__ + "). Controllare credenziali, certificato e filtro FTP Aruba.")
+              sys.exit(1)
+          PY
